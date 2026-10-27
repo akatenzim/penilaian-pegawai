@@ -1,7 +1,16 @@
-// Ganti URL ini dengan URL Web App dari Google Apps Script milik Anda
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvCIBVqjqaKRLXYoHiyF7Cb7HxsmJng4-nWEWtTo3u__da4datClbEKlXael8u_f5qVA/exec";
+// Ganti URL Web App Google Apps Script Anda
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+
+// PASSWORD UTAMA AKSES APLIKASI (Ubah sesuai keinginan Anda)
+const APP_PASSWORD = "penilaian2026"; 
 
 document.addEventListener("DOMContentLoaded", () => {
+  const sectionLogin = document.getElementById("sectionLogin");
+  const sectionApp = document.getElementById("sectionApp");
+  const formLogin = document.getElementById("formLogin");
+  const inputPassword = document.getElementById("inputPassword");
+  const btnLogout = document.getElementById("btnLogout");
+
   const inputEmail = document.getElementById("inputEmail");
   const selectPenilai = document.getElementById("selectPenilai");
   const containerTabel = document.getElementById("containerTabel");
@@ -11,6 +20,38 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSubmit = document.getElementById("btnSubmit");
   const loadingSpinner = document.getElementById("loadingSpinner");
   const btnText = document.getElementById("btnText");
+
+  // Cek apakah penilai sudah pernah login sebelumnya di browser ini
+  if (sessionStorage.getItem("isLoggedIn") === "true") {
+    sectionLogin.classList.add("hidden");
+    sectionApp.classList.remove("hidden");
+  }
+
+  // Handle Login Submit
+  formLogin.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const enteredPassword = inputPassword.value.trim();
+
+    if (enteredPassword === APP_PASSWORD) {
+      sessionStorage.setItem("isLoggedIn", "true");
+      sectionLogin.classList.add("hidden");
+      sectionApp.classList.remove("hidden");
+      inputPassword.value = "";
+    } else {
+      alert("Password salah! Silakan coba lagi.");
+      inputPassword.value = "";
+      inputPassword.focus();
+    }
+  });
+
+  // Handle Logout / Ganti Akun
+  btnLogout.addEventListener("click", () => {
+    sessionStorage.removeItem("isLoggedIn");
+    sectionApp.classList.add("hidden");
+    sectionLogin.classList.remove("hidden");
+    formPenilaian.reset();
+    containerTabel.classList.add("hidden");
+  });
 
   // Populate Dropdown Penilai dari data.js
   if (typeof DATA_PENILAIAN !== "undefined") {
@@ -80,9 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mobileCardsPegawai.appendChild(card);
     });
 
-    // Pasang validasi angka (0-100) dan sinkronisasi input
     initValidationAndSync(daftarPegawai.length);
-
     containerTabel.classList.remove("hidden");
   });
 
@@ -133,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Validasi angka 0-100
     const allInputs = document.querySelectorAll(".val-input");
     let isValid = true;
     allInputs.forEach(input => {
@@ -150,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const rows = tbodyPegawai.querySelectorAll("tr");
-    
     const payload = {
       timestamp: new Date().toISOString(),
       email: email,
